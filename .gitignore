@@ -1,0 +1,12 @@
+venv/
+env/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+data/raw/
+data/processed/
+mlruns/
+models/
+.DS_Store
