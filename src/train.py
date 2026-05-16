@@ -39,7 +39,7 @@ def train_best_model():
         model.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=False)
         
         preds = model.predict(X_test)
-        rmse = mean_squared_error(y_test, preds, squared=False)
+        rmse = np.sqrt(mean_squared_error(y_test, preds))
         return rmse
 
     logger.info("Starting hyperparameter tuning with Optuna...")
@@ -58,7 +58,7 @@ def train_best_model():
         
         # Evaluate
         preds = model.predict(X_test)
-        rmse = mean_squared_error(y_test, preds, squared=False)
+        rmse = np.sqrt(mean_squared_error(y_test, preds))
         mae = mean_absolute_error(y_test, preds)
         r2 = r2_score(y_test, preds)
         
