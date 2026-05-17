@@ -5,8 +5,8 @@ __pycache__/
 .pytest_cache/
 .coverage
 htmlcov/
-data/raw/
+data/raw/*.csv
 data/processed/
 mlruns/
-models/
+models/*.json
 .DS_Store
