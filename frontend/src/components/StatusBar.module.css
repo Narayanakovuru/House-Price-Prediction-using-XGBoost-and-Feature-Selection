@@ -1,0 +1,31 @@
+.bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.idle .dot  { background: #64748b; }
+.online .dot  { background: var(--green-light); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+.offline .dot { background: var(--red); }
+
+.idle   { background: rgba(100,116,139,0.12); border-color: rgba(100,116,139,0.25); color: #64748b; }
+.online { background: rgba(16,185,129,0.1);  border-color: rgba(16,185,129,0.25); color: var(--green-light); }
+.offline{ background: rgba(239,68,68,0.1);   border-color: rgba(239,68,68,0.25);  color: var(--red); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}

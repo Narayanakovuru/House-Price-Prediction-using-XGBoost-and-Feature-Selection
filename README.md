@@ -131,58 +131,67 @@ graph TD
 ## 📁 Project Structure
 
 ```
-ames_housing_mlops/
+ames_housing_mlops/                 ← repository root
 │
-├── app/
-│   └── main.py                    # FastAPI REST backend — /predict & /health
+├── backend/                        ← all ML, pipeline, and API code
+│   ├── app/
+│   │   └── main.py                 # FastAPI REST backend — /predict & /health
+│   │
+│   ├── src/
+│   │   ├── config.py               # BASE_DIR · DATA_DIR · MODEL_DIR · TARGET_COL
+│   │   ├── data_ingestion.py       # OpenML fetch → data/raw/ames_housing.csv
+│   │   ├── preprocessing.py        # ColumnTransformer pipeline + parquet export
+│   │   ├── train.py                # Optuna HPO + XGBoost training + MLflow logging
+│   │   └── monitoring.py           # Evidently AI: drift & regression quality suite
+│   │
+│   ├── notebooks/
+│   │   └── ames-house-prediction.ipynb  # Exploratory analysis & EDA origin
+│   │
+│   ├── data/                       # ⚠ Git-ignored — DVC-tracked
+│   │   ├── raw/
+│   │   │   └── ames_housing.csv    # 2,930 rows × 81 features (OpenML fetch)
+│   │   └── processed/
+│   │       ├── X_train.parquet     # 2,344 samples × N engineered features
+│   │       ├── X_test.parquet      # 586 samples × N engineered features
+│   │       ├── y_train.parquet     # log1p(SalePrice) — train labels
+│   │       └── y_test.parquet      # log1p(SalePrice) — test labels
+│   │
+│   ├── models/                     # ⚠ Git-ignored — DVC-tracked
+│   │   ├── best_xgb_model.json     # XGBoost native serialization (fast load)
+│   │   ├── best_xgb_model.json.dvc # DVC pointer — md5 hash for reproducibility
+│   │   ├── feature_schema.csv      # 10-row sample used for UI slider defaults
+│   │   └── preprocessor.joblib     # Fitted Scikit-learn ColumnTransformer
+│   │
+│   ├── mlruns/                     # ⚠ Git-ignored — MLflow local tracking DB
+│   │   └── 955942723977080354/     # Experiment: Ames_Housing_XGBoost
+│   │       └── <run_id>/
+│   │           ├── metrics/        # rmse, mae, r2 per step
+│   │           ├── params/         # Optuna-found hyperparameters
+│   │           └── artifacts/      # Logged XGBoost model package
+│   │
+│   ├── reports/                    # ⚠ Git-ignored — Evidently AI HTML reports
+│   │   ├── data_drift_<ts>.html
+│   │   ├── model_quality_<ts>.html
+│   │   └── target_drift_<ts>.html
+│   │
+│   ├── pipeline_flow.py            # Prefect @flow orchestrator (recommended runner)
+│   ├── run_pipeline.py             # Lightweight sequential runner (no Prefect daemon)
+│   ├── inject_drift.py             # Drift simulation — injects 300 anomalous rows
+│   ├── pyrightconfig.json          # Pyright/VSCode type-checker config
+│   └── requirements.txt            # Backend Python dependencies
 │
-├── data/                          # ⚠ Git-ignored — DVC-tracked
-│   ├── raw/
-│   │   └── ames_housing.csv       # 2,930 rows × 81 features (raw)
-│   └── processed/
-│       ├── X_train.parquet        # 2,344 samples × N engineered features
-│       ├── X_test.parquet         # 586 samples × N engineered features
-│       ├── y_train.parquet        # log1p(SalePrice) — train labels
-│       └── y_test.parquet         # log1p(SalePrice) — test labels
+├── frontend/                       ← Streamlit UI (fully decoupled from backend)
+│   ├── app.py                      # Streamlit dark-mode prediction dashboard
+│   └── requirements.txt            # Frontend-only deps (streamlit, requests)
 │
-├── frontend/
-│   └── app.py                     # Streamlit dark-mode prediction dashboard
+├── docs/                           ← project documentation
+│   └── MLOPS_PROJECT_REPORT.md     # Detailed system architecture & design report
 │
-├── mlruns/                        # MLflow local tracking (auto-generated)
-│   └── 955942723977080354/        # Experiment: Ames_Housing_XGBoost
-│       └── <run_id>/
-│           ├── metrics/           # rmse, mae, r2 per step
-│           ├── params/            # Optuna-found hyperparameters
-│           └── artifacts/         # Logged XGBoost model package
-│
-├── models/
-│   ├── best_xgb_model.json        # XGBoost native serialization (fast load)
-│   ├── best_xgb_model.json.dvc    # DVC pointer — md5 hash for reproducibility
-│   ├── feature_schema.csv         # 10-row sample used for UI slider defaults
-│   └── preprocessor.joblib        # Fitted Scikit-learn ColumnTransformer
-│
-├── reports/                       # Evidently AI HTML reports (timestamped)
-│   ├── data_drift_<ts>.html
-│   ├── model_quality_<ts>.html
-│   └── target_drift_<ts>.html
-│
-├── src/
-│   ├── config.py                  # BASE_DIR · DATA_DIR · MODEL_DIR · TARGET_COL
-│   ├── data_ingestion.py          # OpenML fetch → data/raw/ames_housing.csv
-│   ├── preprocessing.py           # ColumnTransformer pipeline + parquet export
-│   ├── train.py                   # Optuna HPO + XGBoost training + MLflow logging
-│   └── monitoring.py              # Evidently AI: drift & regression quality suite
-│
-├── .dvc/                          # DVC internal config
-├── .dvcignore                     # DVC exclusion patterns
-├── .gitignore                     # Excludes: data/, mlruns/, venv/, models/
-├── .vscode/settings.json          # Auto-activates venv in VS Code terminals
-├── ames-house-prediction.ipynb    # Legacy exploratory notebook (EDA origin)
-├── inject_drift.py                # Drift simulation — injects 300 anomalous rows
-├── pipeline_flow.py               # Prefect @flow orchestrator (recommended runner)
-├── pyrightconfig.json             # Pyright/VSCode type-checker config
-├── requirements.txt               # Pinned Python dependencies
-└── run_pipeline.py                # Lightweight sequential runner (no Prefect daemon)
+├── .dvc/                           # DVC internal config
+├── .dvcignore                      # DVC exclusion patterns
+├── .gitignore                      # Repo-wide exclusion rules
+├── .vscode/settings.json           # Auto-activates venv in VS Code terminals
+└── README.md                       # This file
 ```
 
 ---
@@ -340,7 +349,7 @@ Interactive Swagger UI available at: `http://127.0.0.1:8000/docs`
 | Python | 3.9+ |
 | pip | Latest |
 | Git | Any |
-| DVC | Installed via `requirements.txt` |
+| DVC | Installed via `backend/requirements.txt` |
 
 ### 1 — Clone the Repository
 
@@ -350,6 +359,8 @@ cd House-Price-Prediction-using-XGBoost-and-Feature-Selection
 ```
 
 ### 2 — Create & Activate Virtual Environment
+
+Create **one shared venv** at the repo root:
 
 ```powershell
 # Windows (PowerShell)
@@ -365,13 +376,20 @@ source venv/bin/activate
 
 ### 3 — Install Dependencies
 
+Install backend ML/API dependencies:
 ```bash
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
+```
+
+Install frontend UI dependencies:
+```bash
+pip install -r frontend/requirements.txt
 ```
 
 <details>
-<summary>📦 Full dependency list</summary>
+<summary>📦 Dependency breakdown</summary>
 
+**`backend/requirements.txt`** — ML pipeline & API
 ```
 scikit-learn    # Preprocessing pipelines & evaluation metrics
 pandas          # Data manipulation & Parquet I/O
@@ -381,12 +399,17 @@ optuna          # Bayesian hyperparameter optimisation
 mlflow          # Experiment tracking & model registry
 fastapi         # Async REST API framework
 uvicorn         # ASGI server for FastAPI
-streamlit       # Interactive frontend dashboard
 pydantic        # Request body validation
-requests        # HTTP client for Streamlit → FastAPI calls
+requests        # HTTP utilities
 prefect         # Pipeline orchestration & scheduling
 dvc             # Data & model versioning
 evidently       # ML monitoring & drift detection
+```
+
+**`frontend/requirements.txt`** — UI only
+```
+streamlit       # Interactive prediction dashboard
+requests        # HTTP client for FastAPI calls
 ```
 
 </details>
@@ -394,6 +417,12 @@ evidently       # ML monitoring & drift detection
 ---
 
 ## ▶️ Running the Pipeline
+
+> **All pipeline commands are run from the `backend/` directory.**
+
+```bash
+cd backend
+```
 
 ### Option A — Prefect Orchestrated *(recommended)*
 
@@ -413,10 +442,10 @@ python run_pipeline.py
 
 | # | Stage | Script | Output |
 |:---:|:---|:---|:---|
-| 1 | **Data Ingestion** | `src/data_ingestion.py` | `data/raw/ames_housing.csv` |
-| 2 | **Preprocessing** | `src/preprocessing.py` | 4× Parquet files + `preprocessor.joblib` |
-| 3 | **Training** | `src/train.py` | `best_xgb_model.json` + MLflow run |
-| 4 | **Monitoring** | `src/monitoring.py` | 3× Evidently HTML reports |
+| 1 | **Data Ingestion** | `backend/src/data_ingestion.py` | `backend/data/raw/ames_housing.csv` |
+| 2 | **Preprocessing** | `backend/src/preprocessing.py` | 4× Parquet files + `preprocessor.joblib` |
+| 3 | **Training** | `backend/src/train.py` | `backend/models/best_xgb_model.json` + MLflow run |
+| 4 | **Monitoring** | `backend/src/monitoring.py` | 3× Evidently HTML reports in `backend/reports/` |
 
 > **Prefect caching:** Data ingestion uses `task_input_hash` caching — if you rerun the pipeline within 24 hours, stage 1 is skipped and local files are reused, saving network bandwidth.
 
@@ -424,21 +453,26 @@ python run_pipeline.py
 
 ## 🖥️ Application Usage
 
-### Start the FastAPI Backend
+### Terminal 1 — Start the FastAPI Backend
+
+Run from the `backend/` directory:
 
 ```bash
+# From repo root:
+cd backend
 uvicorn app.main:app --reload
 ```
 
 | Endpoint | URL |
 |:---|:---|
-| REST API | `http://127.0.0.1:8000` |
+| REST API base | `http://127.0.0.1:8000` |
 | Swagger UI | `http://127.0.0.1:8000/docs` |
 | ReDoc | `http://127.0.0.1:8000/redoc` |
+| Health check | `http://127.0.0.1:8000/health` |
 
-### Start the Streamlit Frontend
+### Terminal 2 — Start the Streamlit Frontend
 
-Open a **new terminal** (with `venv` activated):
+Open a **new terminal** (with `venv` activated) from the **repo root**:
 
 ```bash
 streamlit run frontend/app.py
@@ -446,20 +480,23 @@ streamlit run frontend/app.py
 
 Navigate to `http://localhost:8501` to use the interactive house price calculator with:
 - Dynamic sliders for `OverallQual`, `GrLivArea`, `YearBuilt`, `TotalBsmtSF`, `GarageCars`, `FullBath`
-- **Smart defaults** — missing features auto-populated from `feature_schema.csv` (median for numeric, mode for categorical)
+- **Smart defaults** — missing features auto-populated from `backend/models/feature_schema.csv` (median for numeric, mode for categorical)
 - Real-time predictions with visual success/error feedback
 
 ---
 
 ## 📈 Drift Monitoring & Simulation
 
+> All monitoring commands are run from the `backend/` directory.
+
 ### Running Normal Monitoring
 
 ```bash
+cd backend
 python -m src.monitoring
 ```
 
-Generates three Evidently AI HTML reports in `reports/`:
+Generates three Evidently AI HTML reports in `backend/reports/`:
 
 | Report | Statistical Test | Detects |
 |:---|:---|:---|
@@ -470,10 +507,11 @@ Generates three Evidently AI HTML reports in `reports/`:
 ### Simulating Concept Drift
 
 ```bash
+cd backend
 python inject_drift.py
 ```
 
-Injects **300 anomalous records** into `data/raw/ames_housing.csv`:
+Injects **300 anomalous records** into `backend/data/raw/ames_housing.csv`:
 - `GrLivArea` multiplied **~6×** (10,000+ sq ft mansions)
 - `SalePrice` set to **$20,000** (extreme underpricing)
 - Reruns preprocessing and triggers the monitoring suite
@@ -482,6 +520,7 @@ Injects **300 anomalous records** into `data/raw/ames_housing.csv`:
 Alternatively, simulate drift in-memory without modifying source data:
 
 ```bash
+cd backend
 python -m src.monitoring --drift
 ```
 
@@ -489,9 +528,12 @@ python -m src.monitoring --drift
 
 ## 🔬 Experiment Tracking
 
+> Run from the `backend/` directory so MLflow resolves the local `mlruns/` store.
+
 ### MLflow UI
 
 ```bash
+cd backend
 mlflow ui
 # Open http://localhost:5000
 ```
@@ -501,6 +543,7 @@ View all tracked runs, compare hyperparameter configurations, inspect metric cur
 ### Prefect Dashboard
 
 ```bash
+cd backend
 prefect server start
 # Open http://localhost:4200
 ```

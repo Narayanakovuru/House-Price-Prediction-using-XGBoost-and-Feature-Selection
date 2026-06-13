@@ -1,12 +1,30 @@
+# ── Python ──────────────────────────────────────────────────
 venv/
 env/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 .pytest_cache/
 .coverage
 htmlcov/
-data/raw/*.csv
-data/processed/
-mlruns/
-models/*.json
+
+# ── Data & Model Artifacts (DVC-tracked) ────────────────────
+backend/data/raw/*.csv
+backend/data/processed/
+backend/models/*.json
+backend/models/*.joblib
+
+# ── Experiment Tracking ─────────────────────────────────────
+backend/mlruns/
+
+# ── Monitoring Reports ──────────────────────────────────────
+backend/reports/*.html
+
+# ── Notebook Checkpoints ────────────────────────────────────
+backend/notebooks/.ipynb_checkpoints/
+.ipynb_checkpoints/
+
+# ── System ──────────────────────────────────────────────────
 .DS_Store
+Thumbs.db

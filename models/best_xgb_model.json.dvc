@@ -1,5 +1,0 @@
-outs:
-- md5: 25f1d3a54abcc113acacce4064aedc6f
-  size: 1566548
-  hash: md5
-  path: best_xgb_model.json

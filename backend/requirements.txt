@@ -1,0 +1,13 @@
+scikit-learn
+pandas
+numpy
+xgboost
+optuna
+mlflow
+fastapi
+uvicorn
+pydantic
+Requests
+prefect
+dvc
+evidently
