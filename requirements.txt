@@ -9,3 +9,6 @@ uvicorn
 streamlit
 pydantic
 Requests
+prefect
+dvc
+evidently
